@@ -1,1 +1,516 @@
 
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 R 图表代码库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .plot-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .plot-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+
+        .plot-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            cursor: pointer;
+        }
+
+        .plot-info {
+            padding: 20px;
+        }
+
+        .plot-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .plot-info p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .plot-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .plot-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            transform: rotate(90deg);
+            transition: transform 0.3s;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+        .modal-actions {
+            padding: 0 30px 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 R 图表代码库</h1>
+            <p>精选 R 语言数据可视化代码示例</p>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <!-- 图表卡片将通过 JavaScript 生成 -->
+        </div>
+    </div>
+
+    <!-- 代码查看模态框 -->
+    <div class="modal" id="codeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle"></h2>
+            </div>
+            <div class="modal-body">
+                <p id="modalDescription"></p>
+                <div class="code-block">
+                    <pre id="codeBlock"></pre>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="copyCode()">📋 复制代码</button>
+                <button class="btn btn-success" onclick="downloadCode()">⬇️ 下载代码</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 图表数据配置
+        const plots = [
+            {
+                id: 'scatter_basic',
+                title: '基础散点图',
+                description: '使用 ggplot2 创建简单的散点图，展示两个连续变量之间的关系',
+                tags: ['ggplot2', '基础', '相关性'],
+                image: 'images/plots/scatter_basic.png',
+                code: `# 基础散点图
+library(ggplot2)
+
+# 创建示例数据
+data <- data.frame(
+  x = rnorm(100),
+  y = rnorm(100)
+)
+
+# 绘制散点图
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.6) +
+  theme_minimal() +
+  labs(
+    title = "基础散点图示例",
+    x = "X 轴变量",
+    y = "Y 轴变量"
+  )
+
+# 保存图片
+ggsave("scatter_basic.png", width = 8, height = 6, dpi = 300)`
+            },
+            {
+                id: 'bar_grouped',
+                title: '分组柱状图',
+                description: '展示不同类别和分组的数据对比，适用于多维度数据比较',
+                tags: ['ggplot2', '对比', '分组'],
+                image: 'images/plots/bar_grouped.png',
+                code: `# 分组柱状图
+library(ggplot2)
+
+# 创建示例数据
+data <- data.frame(
+  category = rep(c("A", "B", "C"), each = 3),
+  group = rep(c("G1", "G2", "G3"), 3),
+  value = c(23, 45, 67, 34, 56, 78, 45, 67, 89)
+)
+
+# 绘制分组柱状图
+ggplot(data, aes(x = category, y = value, fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(
+    title = "分组柱状图",
+    x = "类别",
+    y = "数值",
+    fill = "分组"
+  )
+
+# 保存图片
+ggsave("bar_grouped.png", width = 10, height = 6, dpi = 300)`
+            },
+            {
+                id: 'heatmap_basic',
+                title: '热力图',
+                description: '使用颜色深浅展示矩阵数据的模式和趋势',
+                tags: ['ggplot2', '矩阵', '模式识别'],
+                image: 'images/plots/heatmap_basic.png',
+                code: `# 热力图
+library(ggplot2)
+library(reshape2)
+
+# 创建示例矩阵
+set.seed(123)
+mat <- matrix(rnorm(100), nrow = 10)
+colnames(mat) <- paste0("Sample", 1:10)
+rownames(mat) <- paste0("Gene", 1:10)
+
+# 转换为长格式
+data <- melt(mat)
+
+# 绘制热力图
+ggplot(data, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    low = "blue", 
+    mid = "white", 
+    high = "red",
+    midpoint = 0
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(
+    title = "基因表达热力图",
+    x = "样本",
+    y = "基因",
+    fill = "表达量"
+  )
+
+# 保存图片
+ggsave("heatmap_basic.png", width = 10, height = 8, dpi = 300)`
+            },
+            {
+                id: 'sankey_flow',
+                title: '桑基图',
+                description: '展示数据在不同阶段的流动和转换过程',
+                tags: ['ggalluvial', '流程', '转化分析'],
+                image: 'images/plots/sankey_flow.png',
+                code: `# 桑基图
+library(ggplot2)
+library(ggalluvial)
+
+# 创建示例数据
+data <- data.frame(
+  Freq = c(30, 20, 25, 35, 15, 10, 20, 25),
+  Stage1 = c("A", "A", "B", "B", "A", "A", "B", "B"),
+  Stage2 = c("X", "Y", "X", "Y", "X", "Y", "X", "Y"),
+  Stage3 = c("M", "M", "M", "M", "N", "N", "N", "N")
+)
+
+# 绘制桑基图
+ggplot(data,
+       aes(y = Freq,
+           axis1 = Stage1,
+           axis2 = Stage2,
+           axis3 = Stage3)) +
+  geom_alluvium(aes(fill = Stage1), alpha = 0.7) +
+  geom_stratum(width = 1/12, fill = "white", color = "grey") +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(limits = c("阶段1", "阶段2", "阶段3")) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(
+    title = "用户转化流程桑基图",
+    y = "用户数量"
+  )
+
+# 保存图片
+ggsave("sankey_flow.png", width = 10, height = 6, dpi = 300)`
+            }
+        ];
+
+        // 当前选中的图表
+        let currentPlot = null;
+
+        // 页面加载后渲染图表
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGallery();
+        });
+
+        // 渲染图表库
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            
+            gallery.innerHTML = plots.map(plot => `
+                <div class="plot-card">
+                    <img src="${plot.image}" 
+                         alt="${plot.title}" 
+                         class="plot-image"
+                         onclick="showCode('${plot.id}')"
+                         onerror="this.src='https://via.placeholder.com/400x300/667eea/ffffff?text=${encodeURIComponent(plot.title)}'">
+                    <div class="plot-info">
+                        <h3>${plot.title}</h3>
+                        <p>${plot.description}</p>
+                        <div class="plot-tags">
+                            ${plot.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="plot-links">
+                            <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showCode('${plot.id}')">
+                                📝 查看代码
+                            </a>
+                            <a href="#" class="btn btn-success" onclick="event.preventDefault(); downloadCodeFile('${plot.id}')">
+                                ⬇️ 下载 R 文件
+                            </a>
+                            <a href="${plot.image}" class="btn btn-info" download="${plot.id}.png">
+                                🖼️ 下载图片
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示代码
+        function showCode(plotId) {
+            const plot = plots.find(p => p.id === plotId);
+            if (!plot) return;
+
+            currentPlot = plot;
+            document.getElementById('modalTitle').textContent = plot.title;
+            document.getElementById('modalDescription').textContent = plot.description;
+            document.getElementById('codeBlock').textContent = plot.code;
+            document.getElementById('codeModal').style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('codeModal').style.display = 'none';
+        }
+
+        // 复制代码
+        function copyCode() {
+            const code = document.getElementById('codeBlock').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ 代码已复制到剪贴板！');
+            }).catch(() => {
+                // 备用方案
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('✅ 代码已复制到剪贴板！');
+            });
+        }
+
+        // 下载代码文件
+        function downloadCode() {
+            if (!currentPlot) return;
+            downloadCodeFile(currentPlot.id);
+        }
+
+        function downloadCodeFile(plotId) {
+            const plot = plots.find(p => p.id === plotId);
+            if (!plot) return;
+
+            const blob = new Blob([plot.code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${plot.id}.R`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('codeModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
